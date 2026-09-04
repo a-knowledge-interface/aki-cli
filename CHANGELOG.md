@@ -94,5 +94,5 @@ and forth mid-conversation.
 - Platforms: `linux-x64`. (`linux-arm64`, `macos-arm64`, `macos-x64` are recognized by
   the installer but not yet built.) Linux binaries link system OpenSSL.
 
-[0.8.23]: https://github.com/a-knowlage-interface/aki-cli/releases/tag/v0.8.23
-[0.8.22]: https://github.com/a-knowlage-interface/aki-cli/releases/tag/v0.8.22
+[0.8.23]: https://github.com/a-knowledge-interface/aki-cli/releases/tag/v0.8.23
+[0.8.22]: https://github.com/a-knowledge-interface/aki-cli/releases/tag/v0.8.22

@@ -19,11 +19,11 @@ executable — no Rust toolchain, no Node runtime, no `node_modules`.
 ## Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/a-knowlage-interface/aki-cli/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/a-knowledge-interface/aki-cli/main/install.sh | bash
 ```
 
 The installer downloads the binary for your platform from
-[Releases](https://github.com/a-knowlage-interface/aki-cli/releases), verifies its
+[Releases](https://github.com/a-knowledge-interface/aki-cli/releases), verifies its
 checksum, installs it to `~/.local/bin`, and copies aki's Claude Code skills into
 `~/.claude/skills`.
 

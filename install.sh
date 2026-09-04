@@ -3,7 +3,7 @@ set -euo pipefail
 
 # aki installer — downloads a prebuilt binary from the GitHub Releases of this repo.
 #
-#   curl -fsSL https://raw.githubusercontent.com/a-knowlage-interface/aki-cli/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/a-knowledge-interface/aki-cli/main/install.sh | bash
 #
 # There is no build step and no Rust toolchain involved; aki ships as a single
 # self-contained binary plus the Claude Code skills it installs alongside itself.
@@ -14,7 +14,7 @@ set -euo pipefail
 #   AKI_SKILLS_DIR    where skills go (default: ~/.claude/skills)
 #   AKI_NO_SKILLS=1   skip installing skills
 
-REPO="a-knowlage-interface/aki-cli"
+REPO="a-knowledge-interface/aki-cli"
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'
 info()  { echo -e "${GREEN}[+]${NC} $*"; }
