@@ -1,0 +1,17 @@
+# Build artifacts. Release binaries are uploaded to a GitHub Release, never committed.
+/target
+/dist
+*.log
+
+# Internal release notes staged next to the assets. This repo is public and the
+# handoff names the private source repo, so it must not be committable here.
+/HANDOFF.md
+
+# OS / editor
+.DS_Store
+*.swp
+.idea/
+.vscode/
+
+# aki local state
+.aki/
