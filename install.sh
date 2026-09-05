@@ -127,6 +127,15 @@ case ":$PATH:" in
         ;;
 esac
 
+# The verify below runs the binary by full path, so the install "succeeds" even
+# when the user's shell would resolve `aki` to something else — an old build in
+# ~/.cargo/bin is the classic case. Say so now, not after the first weird error.
+RESOLVED="$(command -v aki 2>/dev/null || true)"
+if [ -n "$RESOLVED" ] && [ "$RESOLVED" != "$INSTALL_DIR/aki" ]; then
+    warn "another aki at $RESOLVED comes earlier on your PATH and shadows this install."
+    echo "    Remove it (rm \"$RESOLVED\") or put $INSTALL_DIR first; then run: hash -r"
+fi
+
 # --- Install the skills -----------------------------------------------------
 #
 # These teach Claude Code to drive aki itself (create tasks, search project
