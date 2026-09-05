@@ -5,6 +5,12 @@ All notable changes to the released `aki` binary are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versions
 before 0.8.22 were internal; the history starts where the public releases do.
 
+## [0.8.26] — 2026-09-05
+
+### Changed
+
+- Release-pipeline housekeeping only; the binary is behaviorally identical to 0.8.24.
+
 ## [0.8.25] — 2026-09-05
 
 ### Changed
@@ -119,6 +125,7 @@ and forth mid-conversation.
 - Platforms: `linux-x64`. (`linux-arm64`, `macos-arm64`, `macos-x64` are recognized by
   the installer but not yet built.) Linux binaries link system OpenSSL.
 
+[0.8.26]: https://github.com/a-knowledge-interface/aki-cli/releases/tag/v0.8.26
 [0.8.25]: https://github.com/a-knowledge-interface/aki-cli/releases/tag/v0.8.25
 [0.8.24]: https://github.com/a-knowledge-interface/aki-cli/releases/tag/v0.8.24
 [0.8.23]: https://github.com/a-knowledge-interface/aki-cli/releases/tag/v0.8.23
