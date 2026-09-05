@@ -139,7 +139,9 @@ elif [ -d "$PKG/skills" ]; then
     for d in "$PKG"/skills/*/; do
         [ -f "$d/SKILL.md" ] || continue
         rm -rf "$SKILLS_DIR/$(basename "$d")"
-        cp -r "$d" "$SKILLS_DIR/"
+        # ${d%/}: the glob leaves a trailing slash, and BSD/macOS `cp -r dir/ dst`
+        # copies dir's CONTENTS into dst where GNU copies the dir itself.
+        cp -r "${d%/}" "$SKILLS_DIR/"
     done
     info "skills installed to $SKILLS_DIR"
 fi
