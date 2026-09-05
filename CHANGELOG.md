@@ -5,6 +5,22 @@ All notable changes to the released `aki` binary are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versions
 before 0.8.22 were internal; the history starts where the public releases do.
 
+## [0.8.24] — 2026-09-05
+
+### Added
+
+- **macOS is a released platform**: `macos-arm64` and `macos-x64` assets ship with every
+  release, built for macOS 11 (Big Sur) and newer. The installer already knew how to pick
+  them; now they exist.
+
+### Notes
+
+- The curl installer is unaffected by Gatekeeper. A tarball downloaded in a browser is
+  quarantined — `xattr -d com.apple.quarantine <file>` before extracting. Binaries are
+  ad-hoc signed, not notarized.
+- macOS binaries use the system Security framework for TLS — no extra packages, unlike
+  the Linux OpenSSL note below.
+
 ## [0.8.23] — 2026-09-04
 
 ### Changed
@@ -94,5 +110,6 @@ and forth mid-conversation.
 - Platforms: `linux-x64`. (`linux-arm64`, `macos-arm64`, `macos-x64` are recognized by
   the installer but not yet built.) Linux binaries link system OpenSSL.
 
+[0.8.24]: https://github.com/a-knowledge-interface/aki-cli/releases/tag/v0.8.24
 [0.8.23]: https://github.com/a-knowledge-interface/aki-cli/releases/tag/v0.8.23
 [0.8.22]: https://github.com/a-knowledge-interface/aki-cli/releases/tag/v0.8.22

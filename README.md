@@ -45,12 +45,17 @@ against the published `.sha256`, and move `aki` onto your `PATH`.
 | Platform | Status |
 |---|---|
 | `linux-x64` | published |
+| `macos-arm64` | published (macOS 11+) |
+| `macos-x64` | published (macOS 11+) |
 | `linux-arm64` | not yet built |
-| `macos-arm64` | not yet built |
-| `macos-x64` | not yet built |
 
 The installer already knows all four; it will tell you clearly if a release has no asset
 for your platform yet.
+
+**macOS note:** the curl installer above works as-is. If you instead download a tarball
+in a **browser**, Gatekeeper quarantines it and macOS will refuse to run the binary —
+clear it with `xattr -d com.apple.quarantine aki-macos-arm64.tar.gz` before extracting
+(the binaries are ad-hoc signed, not notarized).
 
 ### Prerequisites
 
@@ -63,7 +68,8 @@ Not bundled — the installer checks for them and tells you what's missing:
   it's missing
 
 Linux binaries are built against system OpenSSL. If `aki --version` fails on a minimal
-distro, install your distro's `openssl` / `ca-certificates` packages.
+distro, install your distro's `openssl` / `ca-certificates` packages. macOS binaries use
+the system Security framework — nothing extra to install.
 
 ## Quick start
 
