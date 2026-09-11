@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# SOURCE OF TRUTH: this file lives at public/install.sh in the aki-cli source
+# repo and is pushed here by the release workflow. Edit it there, never here:
+# an edit made here is overwritten by the next release.
+#
+# NOTE this is NOT the source repo's own install.sh. That one builds aki from
+# Rust source for contributors; this one downloads a published release binary.
+# The two must never be conflated.
+
 # aki installer — downloads a prebuilt binary from the GitHub Releases of this repo.
 #
 #   curl -fsSL https://raw.githubusercontent.com/a-knowledge-interface/aki-cli/main/install.sh | bash

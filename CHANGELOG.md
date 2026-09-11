@@ -1,9 +1,65 @@
+<!--
+  SOURCE OF TRUTH: this file lives at public/CHANGELOG.md in the aki-cli source
+  repo and is pushed here by the release workflow. Edit it there, never here: an
+  edit made here is overwritten by the next release.
+
+  This is the USER-FACING changelog, describing the released binary. The source
+  repo keeps its own CHANGELOG.md with the engineering detail behind each change.
+-->
+
 # Changelog
 
 All notable changes to the released `aki` binary are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versions
 before 0.8.22 were internal; the history starts where the public releases do.
+
+## [0.8.30] — 2026-09-11
+
+### Changed
+
+- This repo's README, changelog and installer are now published from the source repo on
+  every release, so they can no longer drift from the binary they describe.
+
+## [0.8.29] — 2026-09-11
+
+### Changed
+
+- This repo's README is now published from the source repo on every release. It had gone
+  two releases without mentioning agents, describing a product that no longer matched the
+  binary beside it.
+- Internal dependency upgrade that drops a crate a future Rust release will reject.
+  `aki ls`, `aki pls` and `aki info` render exactly as before.
+
+## [0.8.28] — 2026-09-11
+
+### Added
+
+- **Agents: named teammates that outlive a task.** A task's AI session ends with the task;
+  an agent is the persistent kind, with a name, standing instructions, a model, an autonomy
+  level, and one continuous conversation that carries from one assignment to the next.
+  - `aki agent new` / `list` / `show` / `edit` / `rm` create and shape one. An edit reaches
+    a *working* agent at its next pause rather than only at the next spawn, so a corrected
+    brief lands without a restart. Retiring keeps the history, and re-creating the name
+    restores it.
+  - `aki agent ask` queues work and `--wait` blocks for the result, which makes an agent
+    scriptable. `jobs` shows the queue and `cancel` drops one that has not started. Work is
+    a queue, not a chat: an agent runs one job at a time, in order.
+  - `aki agent schedule` gives an agent standing work. Alongside `--every 1h` and
+    `--daily 09:00`, `--when` takes plain language ("every weekday at 09:00", "every monday
+    at 10:00 yerevan time") and answers with a schedule aki can actually execute or refuses
+    with a reason, never a near-miss. It echoes the canonical sentence and the exact cron
+    line so you can see what it understood before trusting it.
+  - An agent can drive a whole task: it briefs the task's session, lets the work happen in
+    the task's own worktrees, then reviews the outcome before reporting back.
+
+### Fixed
+
+- A task job interrupted by a restart is reclaimed when the daemon comes back and resumes at
+  review, instead of dispatching a second time. A deploy mid-task no longer wedges that
+  agent's queue or briefs the work twice.
+- A scheduled weekly job reported its missed runs against the wrong interval, so a
+  Mondays-only schedule that missed three weeks claimed to have missed twenty-one.
 
 ## [0.8.26] — 2026-09-05
 
