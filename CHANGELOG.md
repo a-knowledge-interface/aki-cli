@@ -14,6 +14,101 @@ All notable changes to the released `aki` binary are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versions
 before 0.8.22 were internal; the history starts where the public releases do.
 
+## [Unreleased]
+
+## [0.8.31] — 2026-09-18
+
+### Added
+
+- **Make a project from the web.** A project is a folder on your machine, so until now one
+  could only be born at a terminal with `aki init` in the folder you were standing in — and
+  the web's empty Projects page could only tell you to go and do that. The daemon now answers
+  two calls the browser makes over the tunnel: one lists the folders on this machine, the
+  other runs the real `aki init` on the one you picked. The browser half is the **+** in the
+  Projects header. Both are owner-only: nobody you share a task or a project with can read
+  your filesystem through them.
+- **`aki init --dir <folder>`** initializes a folder you are not standing in.
+- **Closing a task, separately from finishing it.** `aki t close <task>` stops the task's
+  processes and marks it closed, leaving the worktrees and every change in them exactly as
+  they are. It is the honest end for work you are setting down rather than landing: no
+  commit, no merge, no judgement about whether the work was any good. A closed task starts
+  again like a done one does.
+- **Removing a task, and the confirmation it deserves.** `aki rm -t <task>` destroys a task
+  outright: worktrees, branches, the local record and the row the web reads. It asks first,
+  in as many words: this cannot be undone and uncommitted changes are lost. It refuses on a task that is still open — close it
+  first, so that "remove" is never the command you reach for to stop something. The task then
+  disappears from `aki ls` and from the web UI on every machine, not just the one you ran it
+  on.
+- **Stopping a task without ending it.** `aki t stop <task>` shuts down the task's session
+  and sidecar processes and leaves everything else alone. It is safe to run on a task that is
+  already stopped.
+- **`aki start -a <name>` opens an agent's conversation in a terminal.** An agent is a
+  session like a task is, so it opens the same way. `aki agent ask` still queues a job and
+  the agent works its queue in order; `start -a` drops you into that same continuous
+  conversation to type in directly, which is what you want when an agent has been getting
+  something wrong and showing it beats describing it.
+- **One command to create things:** `aki create -t <name>` for a task, `-a` for an agent,
+  `-d` for a doc, each with its own options. The older spellings (`aki t new`, `aki agent
+  new`, `aki doc create`) still work exactly as before — they are in scripts and in muscle
+  memory — they are just no longer the ones the help teaches.
+
+- **`aki repo add|ls|rm`** replaces `aki add` and `aki remove`. Repos are *registered*, not
+  created — `aki repo add` points aki at a git repo that already exists, and `aki repo rm`
+  stops pointing at it without touching a single file on disk. `aki repo ls` is new; that
+  table was previously only reachable inside `aki info`.
+- **Another project's agents are reachable.** Every agent command now takes
+  `project/agent` as well as a bare name — `aki agent show acme/watchtower`,
+  `aki start -a acme/watchtower` — the same shape tasks have always accepted. `aki agent
+  list` takes `-p`, having no name to qualify. Previously, with `AKI_PROJECT` set (as it is
+  inside every task worktree) another project's agents could not be reached at all except
+  by changing the current project for every shell on the machine.
+
+### Changed
+
+- **`aki task` is gone.** Its last two commands moved: `aki task history` is `aki history`
+  (`hist` still works), and `aki task new` was the hidden legacy spelling of `aki create -t`.
+  Every task verb now lives at the top level with a kind flag.
+- ⚠️ **`aki show` now requires a kind.** `aki show <id>` meant a knowledge chunk; it is
+  `aki show -k <id>`. The command now also shows a task (`-t`), an agent (`-a`) or a doc
+  (`-d`), so it needed to say which.
+- ⚠️ **`aki ls` now requires `-t`, `-a` or `-d`.** A bare `aki ls` errors, naming both. The kind
+  is inferred from the name everywhere else — `aki rm auth-fix`, `aki stop watchtower` —
+  but a listing has no name to infer from, so it asks rather than defaulting.
+- ⚠️ **`aki ls -a` lists AGENTS, not every project's tasks.** `-a` means "an agent"
+  across the CLI — `create`, `rm`, `start`, `stop`, `close`, `send` — so `aki ls` follows.
+  `--all` keeps its long form and its old meaning; only the short form moved. This is the
+  one change here that silently does something different rather than erroring, because both
+  spellings still produce a list.
+
+- **"Active tasks" counts were counting things that are not active tasks.** They included
+  the agent and doc sessions that live beside real tasks, so `aki status` listed rows like
+  `doc-7999cc11…` as active work and `aki pls` counted them — on one machine, 59 active
+  tasks for a project that had 44. They also counted *closed* tasks forever, since closing
+  moves the intent and deliberately leaves the machine status alone. Both are fixed, and
+  the counts now agree with what `aki ls` shows instead of contradicting it.
+- **A task that says "running" on a machine that has gone away now says so.** Previously a
+  task whose machine went offline mid-run stayed "running" forever, and there was no way to
+  tell that apart from work actually in progress. It now reads "was running" once the
+  machine has been silent for thirty seconds.
+- `aki ls` hides closed, done and removed tasks by default, so the list is what you still
+  have open. `--closed` brings the finished ones back, and so does asking for them by name
+  with `-s done`. (`--all` is unrelated and unchanged: it widens the list to every project.)
+
+### Fixed
+
+- **`aki init --name` no longer renames the repo under it.** In a single-repo folder the
+  name was applied before the repo was detected, so `aki init --name payments` in `~/code/api`
+  registered the *repo* as `payments` — and a repo's name is a path component of every
+  worktree cut from it. The repo keeps its own folder's name.
+- **A project name that isn't a slug is folded instead of quietly breaking the web.** A
+  project name is half of every task's address, so a folder like `My Workspace` produced a
+  project the web could never reach. It becomes `my-workspace`, and `aki init` says so.
+- **`aki init` no longer takes a name another folder already holds.** It used to replace the
+  older project in local state, leaving that checkout orphaned — its tasks still resolving by
+  name to a project that had moved. It now refuses and names both folders.
+- A task removed on one machine no longer reappears the next time an older copy of `aki` on
+  another machine syncs.
+
 ## [0.8.30] — 2026-09-11
 
 ### Changed

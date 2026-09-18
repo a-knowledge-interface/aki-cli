@@ -84,10 +84,10 @@ the system Security framework, so there is nothing extra to install.
 cd ~/workspace/my-project
 aki init                              # scan for git repos, create .aki/
 aki -p "add rate limiting to the API" # create a task and start the agent
-aki ls                                # see every task and its status
+aki ls -t                                # see every task and its status
 ```
 
-`aki ls` prints one row per task:
+`aki ls -t` prints one row per task:
 
 ```
 #   Project  Task                   Repos                Status           Age
@@ -115,7 +115,7 @@ you.
 ```bash
 aki diff 1                # review the changes across all repos
 aki done 1                # merge the branches, mark task 1 done
-aki clean 1               # tear down its worktrees and branches
+aki rm -t 1               # stop, close, then delete it entirely
 ```
 
 Task branches are named `aki/<task>`, so `git branch --list 'aki/*'` finds everything aki
@@ -146,12 +146,20 @@ continuous conversation that carries from one assignment to the next. Create one
 such as a release runner, a nightly monitor or a reviewer, and hand it work whenever that
 role is needed instead of re-explaining the role every time.
 
+An agent is a session like a task is, so it opens the same way. `aki send -a` queues a
+job and the agent works through its queue in order; `aki start -a` drops you into that same
+conversation to type in directly, which is what you want when the agent has been getting
+something wrong and you would rather show it than describe it.
+
 ```bash
-aki agent new watchtower \
+aki create -a watchtower \
   -d "Watches production; reports what needs a human." \
   -f watchtower.md --autonomy auto
 
-aki agent ask watchtower "Anything unusual since yesterday?" --wait
+aki send -a watchtower "Anything unusual since yesterday?" --wait
+
+# Or sit in the conversation yourself, the way you would a task:
+aki start -a watchtower
 
 # Standing work, written in plain language. Parsed exactly or refused, never guessed:
 aki agent schedule watchtower --when "every weekday at 09:00" "Run the morning checks."
@@ -170,8 +178,8 @@ aki agent jobs watchtower     # its queue and what recently ran
   while the machine was asleep is counted and shown, never silently skipped.
 - **Edits land live.** `aki agent edit` reaches a *working* agent at its next pause, with
   no restart.
-- **Pinned to a machine.** An agent runs where its daemon runs, and `aki agent list` shows
-  whether that machine is online. Retiring with `aki agent rm` keeps the history:
+- **Pinned to a machine.** An agent runs where its daemon runs, and `aki ls -a` shows
+  whether that machine is online. Retiring with `aki close -a` keeps the history:
   re-creating the name restores it.
 
 Agents appear in the web UI too, each with its status (green working, amber idle), its
@@ -184,58 +192,60 @@ learned instead of rediscovering it.
 
 ```bash
 aki search "how does token refresh work"          # past sessions + curated docs
-aki doc create --title "API Reference" --file docs/API.md
+aki create -d "API Reference" --file docs/API.md
 aki learn list                                     # review distilled learnings
 ```
 
 ## Command reference
 
 Run `aki <command> --help` for any of these. Everywhere `<task>` appears you may write the
-task's name, its `acme/name` form, or its number from `aki ls`.
+task's name, its `acme/name` form, or its number from `aki ls -t`.
 
 ### Tasks
 
 | Command | |
 |---|---|
 | `aki -p "<prompt>"` | create a task from a prompt and start the agent |
-| `aki t new <name> [--repos --base --agent --notes --template]` | create a task without starting it |
-| `aki ls` | list tasks and their status |
+| `aki create -t <name> [--repos --base --profile --notes --template]` | create a task without starting it |
+| `aki ls -t` | list tasks and their status |
 | `aki start <task>` | start or resume a task in the terminal |
 | `aki go <task>` | attach to a running task |
 | `aki stop <task>` | pause the agent, committing anything uncommitted so no work is stranded |
-| `aki t wait <task> --until <state>` | block until the task is awaiting-input, idle, waiting (either), done or stopped |
-| `aki t send <task> "<text>"` | send the task's agent its next prompt |
-| `aki t add-repo <task> <repo>` | give an existing task one more of the project's repos; the worktree appears on the task's branch |
-| `aki t rename <task> <name>` | rename a task; its branch and worktrees keep their names |
+| `aki wait <task> --until <state>` | block until the task is awaiting-input, idle, waiting (either), done or stopped |
+| `aki send <task> "<text>"` | send the task's agent its next prompt |
+| `aki repo add -t <task> <repo>` | give an existing task one more of the project's repos; the worktree appears on the task's branch |
+| `aki rename -t <task> <name>` | rename a task; its branch and worktrees keep their names |
 | `aki diff <task> [--stat]` | diff across all the task's repos |
 | `aki merge <task> [branch]` | merge the task's branches, leave it open |
 | `aki done <task> [branch]` | merge, then mark the task done |
-| `aki clean <task> [--force]` | remove worktrees and delete branches |
+
 | `aki summary <task>` | write the task's summary doc |
-| `aki t rm <task>` | delete the task and its workspace |
-| `aki t hist` | completed task history |
+| `aki rm -t <task>` | stop it, close it, then delete the task and its workspace |
+| `aki hist` | completed task history |
 
 ### Agents
 
 | Command | |
 |---|---|
-| `aki agent new <name> [-d --autonomy --model] [-i \| -f]` | create an agent; `-d` is the one-line description callers see, `-f` reads instructions from a file |
-| `aki agent list` | the project's agents and whether each one's machine is online |
-| `aki agent show <name>` | one agent in full: instructions, autonomy, model, session |
+| `aki create -a <name> [--description --autonomy --model] [-i \| -f]` | create an agent; `--description` is the one line callers see, `-f` reads instructions from a file |
+| `aki start -a <name>` | open the agent's conversation in a terminal and type in it directly |
+| `aki ls -a` | the project's agents and whether each one's machine is online |
+| `aki show -a <name>` | one agent in full: instructions, autonomy, model, session |
 | `aki agent edit <name>` | change instructions, autonomy, model or description; `default` clears an explicit choice |
-| `aki agent ask <name> "<prompt>" [--wait --timeout --autonomy]` | queue work; `--wait` blocks and prints the result |
+| `aki send -a <name> "<prompt>" [--wait --timeout --autonomy]` | queue work; `--wait` blocks and prints the result |
 | `aki agent jobs <name>` | the agent's queue and what recently ran |
 | `aki agent cancel <name> <seq>` | drop a job that has not started yet |
 | `aki agent schedule <name> [--when \| --every \| --daily] [--tz --autonomy]` | standing work; no flags lists, `--clear` removes all |
-| `aki agent rm <name>` | retire an agent; history survives and re-creating the name restores it |
+| `aki close -a <name>` | retire an agent; history survives and re-creating the name restores it |
 
 ### Projects
 
 | Command | |
 |---|---|
 | `aki init` | scan the current directory for repos, create `.aki/` |
-| `aki add <path>` | add a repo to the current project |
-| `aki remove <repo>` | remove a repo from the current project |
+| `aki repo add <path>` | register a repo with the current project |
+| `aki repo ls` | the project's repos |
+| `aki repo rm <repo> [-f]` | deregister a repo — the repo itself is left untouched |
 | `aki pls` | list projects |
 | `aki select <name>` | switch the current project |
 | `aki info` | show the current project's repos and tasks |
@@ -256,7 +266,7 @@ task's name, its `acme/name` form, or its number from `aki ls`.
 | Command | |
 |---|---|
 | `aki search <query>` | search docs and past sessions |
-| `aki doc create \| list \| show \| edit \| attach` | manage project docs |
+| `aki create -d <title>`, `aki ls -d \| show \| edit \| attach` | create and manage project docs |
 | `aki learn list \| show \| promote \| reject` | browse and curate distilled learnings |
 | `aki distill <session>` | distill a session into learnings |
 | `aki index` | rebuild the knowledge index |
@@ -300,21 +310,21 @@ name = "codex"
 command = "codex"
 ```
 
-Pick a profile per task with `aki t new <name> --agent codex`.
+Pick a profile per task with `aki create -t <name> --profile codex`.
 
 ## Running tasks from tasks
 
 An agent has a shell, and `aki` is on it, so an agent can hand work to another
-task and wait for it. `aki t wait` answers with an exit code (`0` it happened,
+task and wait for it. `aki wait` answers with an exit code (`0` it happened,
 `2` timed out, `3` it never will), which is what lets a chain report a problem
 instead of hanging:
 
 ```bash
-aki t new deploy-fix --notes "Fix the failing deploy check."
+aki create -t deploy-fix --notes "Fix the failing deploy check."
 aki web deploy-fix                                  # starts the agent on the brief
-aki t wait deploy-fix --until waiting --timeout 1800 || exit 1
+aki wait deploy-fix --until waiting --timeout 1800 || exit 1
 aki diff deploy-fix --stat
-aki t send deploy-fix "Looks right. Run the tests and report."
+aki send deploy-fix "Looks right. Run the tests and report."
 ```
 
 `--until waiting` covers both ways an agent stops: blocked on a question, and
