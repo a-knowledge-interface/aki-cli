@@ -14,7 +14,8 @@ set -euo pipefail
 #   curl -fsSL https://raw.githubusercontent.com/a-knowledge-interface/aki-cli/main/install.sh | bash
 #
 # There is no build step and no Rust toolchain involved; aki ships as a single
-# self-contained binary plus the Claude Code skills it installs alongside itself.
+# self-contained binary, plus optional global copies of the aki skills it already
+# carries inside itself.
 #
 # Environment:
 #   AKI_VERSION       release to install, e.g. 0.8.21 (default: the latest release)
@@ -146,27 +147,25 @@ fi
 
 # --- Install the skills -----------------------------------------------------
 #
-# These teach Claude Code to drive aki itself (create tasks, search project
-# knowledge, write docs). aki works without them; it is just less fluent.
+# The aki skills (create tasks, search project knowledge, write docs) are built
+# into the binary and given to every session aki starts, on Claude, Pi and Codex.
+# This optional global copy lets a Claude Code session you start yourself, outside
+# aki, use them too. Folders you have edited are kept, never overwritten.
 
 if [ "${AKI_NO_SKILLS:-}" = "1" ]; then
     info "skipping skills (AKI_NO_SKILLS=1)"
+elif [ -d "$PKG/skills" ] && [ -f "$PKG/install-skills.sh" ]; then
+    sh "$PKG/install-skills.sh" "$PKG/skills" "$SKILLS_DIR"
+    info "optional global skills checked at $SKILLS_DIR"
 elif [ -d "$PKG/skills" ]; then
-    mkdir -p "$SKILLS_DIR"
-    for d in "$PKG"/skills/*/; do
-        [ -f "$d/SKILL.md" ] || continue
-        rm -rf "$SKILLS_DIR/$(basename "$d")"
-        # ${d%/}: the glob leaves a trailing slash, and BSD/macOS `cp -r dir/ dst`
-        # copies dir's CONTENTS into dst where GNU copies the dir itself.
-        cp -r "${d%/}" "$SKILLS_DIR/"
-    done
-    info "skills installed to $SKILLS_DIR"
+    warn "release lacks the ownership-safe skill installer; preserving global skills. Managed sessions use the embedded pack."
 fi
 
 # --- Prerequisites ----------------------------------------------------------
 #
-# None of these are bundled: git and zellij are system tools, and claude is
-# Anthropic's own CLI with its own auth. Report honestly rather than guessing.
+# None of these are bundled: git and zellij are system tools, and the coding
+# agents (Claude Code, Pi, Codex) are their vendors' own CLIs with their own
+# logins. aki drives any one of them. Report honestly rather than guessing.
 
 MISSING=0
 
@@ -177,12 +176,18 @@ else
     MISSING=1
 fi
 
-if have claude; then
-    info "claude: $(command -v claude)"
-else
-    warn "claude CLI not found — aki drives it, so nothing will run without it:"
-    echo "    npm install -g @anthropic-ai/claude-code"
-    echo "    https://docs.anthropic.com/en/docs/claude-code/overview"
+FOUND_AGENT=0
+for agent in claude pi codex; do
+    if have "$agent"; then
+        info "$agent: $(command -v "$agent")"
+        FOUND_AGENT=1
+    fi
+done
+if [ "$FOUND_AGENT" = "0" ]; then
+    warn "no coding agent found. aki drives one of these, so install at least one:"
+    echo "    Claude Code  npm install -g @anthropic-ai/claude-code   (https://docs.anthropic.com/en/docs/claude-code/overview)"
+    echo "    Pi           curl -fsSL https://pi.dev/install.sh | sh   (https://pi.dev)"
+    echo "    Codex        npm install -g @openai/codex                (https://developers.openai.com/codex)"
     MISSING=1
 fi
 
@@ -222,7 +227,7 @@ fi
 echo ""
 echo "  Get started:"
 echo "    cd your-workspace"
-echo "    aki init                     # scan for git repos"
+echo "    aki init                     # scan for git repos and pick the agent to run"
 echo "    aki login                    # sign in (optional — needed for the web UI)"
 echo "    aki -p \"fix the auth bug\"     # create a task and start working"
 echo ""

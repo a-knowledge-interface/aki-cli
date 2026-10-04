@@ -16,6 +16,149 @@ before 0.8.22 were internal; the history starts where the public releases do.
 
 ## [Unreleased]
 
+## [0.9.1] — 2026-10-04
+
+0.9.0 was tagged but never published: its macOS build failed its own tests. 0.9.1 is the
+first release with everything below.
+
+aki now drives three coding agents (Claude Code, Pi and Codex) and lets agents work for you
+across projects: personal agents that you can use from any project you own, a choice of the
+machine each agent runs on, and answers that come back to whoever asked.
+
+### Upgrading
+
+- **Restart the daemon once after installing.** The installer replaces the binary, but a
+  running daemon keeps its old code until it restarts:
+  `systemctl --user restart aki-daemon.service` on Linux,
+  `launchctl kickstart -k gui/$(id -u)/com.aki.daemon` on macOS. Personal agents in
+  particular only become available on a machine after its daemon has restarted on 0.9.1.
+- **Tasks made before this version ask once before their first start.** aki now owns the
+  instructions file it writes into a task (`CLAUDE.md`, or `AGENTS.md` for Codex) and never
+  overwrites one it cannot prove it wrote, because you may have edited it. Files from 0.8.x
+  have no such record, so `aki start`, `aki go` and the web refuse with "refusing to replace
+  foreign or edited instructions". Look at the file, then run
+  `aki doctor <task> --repair-context`: it keeps a backup next to it and writes a fresh one.
+- **A `[[agent_profiles]]` entry for Codex or Pi needs a `kind`.** An entry without one is a
+  Claude profile, so `name = "codex"` with no `kind` ran the `codex` binary with Claude's
+  arguments. Add `kind = "codex"` (or `"pi"`), or delete the entry: `--profile codex` and
+  `--profile pi` work without any configuration now.
+- **New terminal tasks are named without their number.** Their branch and folder are
+  `aki/<task>` and `.aki/worktrees/<task>`, not `aki/<n>-<task>`. Existing tasks keep their
+  paths. Scripts that built a branch name from the number need updating.
+- **A 0.8.31 CLI keeps working** against the service. Personal agents need 0.9.1 on the
+  machine that runs them and on any machine that gives them work.
+
+### Added
+
+- **Pi and Codex, next to Claude Code.** Choose the agent a project uses with
+  `aki init --agent <claude|pi|codex>`, or per task and per agent with `--profile`, or in the
+  web's harness picker. Without a choice a new task or agent uses the project's default, then
+  the machine's. The choice is fixed when the task or agent is created.
+  - **Pi** runs in the terminal and from the web. aki's gate extension gives it Manual
+    approvals, question cards and a write boundary for its file-writing tools. A prompt sent
+    from the web is tracked by id, so a retry or reload never sends it twice.
+  - **Codex** runs from the web (`aki web`, `aki start --headless`) through
+    `codex app-server`, with streamed answers and reasoning, interrupt and questions. It
+    cannot hold a tool for approval, so it runs at Auto (sandboxed to the task's worktrees) or
+    Full, never Manual, and new Codex tasks and agents start at Auto.
+  - **`aki init` lists the agents installed on the machine** with their versions and whether
+    they are signed in, uses the only ready one as the project default, and asks when there
+    are several.
+  - **The web shows each machine's agents** and whether each is installed and signed in, and
+    a task whose agent is not installed is refused at launch with the reason.
+- **Models and reasoning effort from the machine.** The web's model picker lists what the
+  machine's Claude Code, Pi or Codex actually offers, including 1M-context Claude models, and
+  a reasoning-effort control offers the levels that model supports. Opus 5 and Opus 4.8 appear
+  under previous models when your Claude account accepts them. `aki go` carries the model and
+  effort chosen on the web into the terminal.
+- **Personal agents.** `aki create -a <name> --mine` makes an agent that lives in your own
+  `me` space instead of a project. You can give it work from any project you own, and nobody
+  else can use it. `aki ls -a --mine` lists them, `me/<name>` addresses one, and the web lists
+  them under **My agents**. Each machine sets up its `me` space (`~/.aki/me`) when its daemon
+  starts. `me` is reserved as a project name.
+- **Choose the machine an agent runs on.** `aki create -a <name> --machine <name|id>`, or
+  **Runs on** in the web. From the terminal the default is the machine you are on. An agent is
+  only ever placed on one of your own machines, and it stays there: `aki start -a` on any
+  other machine refuses and says where it runs. `aki ls -a` and `aki show -a` name the
+  machine.
+- **Answers come back to whoever asked.** `aki send <agent> "..."` from inside an aki task or
+  agent session writes the agent's answer back into that session when the job finishes,
+  including when the agent runs on another of your machines. `--wait` still prints it instead.
+  `aki send` finds the agent itself: the current project's first, then your personal agents;
+  `project/name` and `me/name` say exactly which. A project agent takes work only from its own
+  project's sessions; a personal agent only from its owner's.
+- **`aki doctor <task>`** explains what aki believes about a task's session: which agent runs
+  it, whether that agent is installed and signed in, where its transcript is, what is driving
+  it, and whether its instructions file is aki's. It exits with code 2 when it finds a problem.
+  `--repair-context` backs up and regenerates the instructions file.
+- **`aki adopt <session-id> -t <task>`** attaches a Claude Code, Pi or Codex session you ran
+  outside aki to a task and captures its transcript, so it becomes searchable project
+  knowledge.
+- **`aki link-chatgpt`** gives Pi the ChatGPT sign-in that Codex already has on this machine,
+  so Pi can use a ChatGPT Plus or Pro subscription without its own login. It never replaces a
+  login Pi already has unless you pass `--force`.
+- **Projects and tasks without repos.** `aki init --no-repos` makes a project from a folder
+  with no git repos, and `aki create -t --no-repos` a task that works directly in the project
+  folder, with no worktrees and nothing to merge. Without the flag an empty folder is still
+  refused, and a terminal now asks instead.
+- **Unstick a session from the web.** Stop ends the current turn and Skip drops a question or
+  approval that is stuck, without killing the session. A permission reply that never reached
+  Claude Code is reported instead of hanging.
+- **aki's skills reach every session.** The skills that teach an agent to search project
+  knowledge and save what it learns are built into the binary and given to every session aki
+  starts, on any of the three agents. The installer's copy in `~/.claude/skills` is now only
+  for Claude Code sessions you start yourself.
+- **Summaries, distilled learnings and web doc generation follow the project's agent**, on
+  Claude Code or Pi.
+
+### Changed
+
+- **Task numbers come from your account.** One sequence per project, shared by the terminal
+  and the web, handed out in creation order. A task created offline shows `unnumbered` until
+  aki next syncs. A number is never read as a position in the list any more: when any task in
+  a project was unnumbered, `aki rm -t 3` could pick the third row rather than task 3.
+- **`aki go` and a terminal `aki start` make sure the web has let go first.** They open the
+  terminal only once the daemon confirms the web-driven session has stopped, so two writers
+  never share one conversation. If that cannot be confirmed, they refuse and say why.
+- **`aki ls -a`** shows AGENT, MACHINE and DESCRIPTION, names the machine (with
+  `(offline)`), and mentions your personal agents. **`aki show -a`** adds kind, machine and
+  harness. **`aki agent jobs`** shows which session asked.
+- **An agent keeps its agent program across machines**, and `aki start -a` runs the agent's
+  own choice rather than the machine's default.
+- **An unknown profile name is refused.** `--profile` or `defaults.agent` naming something
+  that is neither a configured profile nor `claude`, `pi` or `codex` used to run Claude
+  silently.
+- **Daemon refusals say why.** A drive the daemon refused used to be reported as "couldn't
+  reach the aki daemon"; the daemon's own reason is now shown.
+- `aki close` on a done task leaves it done, and closing again re-sends the close.
+
+### Fixed
+
+- `aki serve --port <anything but 8899>` stopped every running agent session on the machine.
+- A web Deny with no message permanently broke a Claude session, and an approval or answer
+  aimed at the wrong prompt could leave a turn blocked forever.
+- The web model picker could not select a 1M-context Claude model or match the running one,
+  and `aki go` dropped the model chosen on the web.
+- The web cleared an approval card before the answer had been delivered.
+- Clearing an agent's instructions in the web did not reach the running agent.
+- An agent job that could not be set up on its machine was retried forever instead of being
+  reported as failed.
+- The installer deleted skills you had edited in `~/.claude/skills`. It now keeps any skill
+  folder it did not install, or that you changed.
+- The installer reported a missing prerequisite on a machine with Pi or Codex but no Claude
+  Code. Any one of the three is enough.
+- `aki init` in a folder named `me` wrote its files before refusing the name.
+
+### Known limitations
+
+- **Codex** cannot be opened in a terminal (`aki go` refuses), and summaries, distilled
+  learnings and web doc generation do not run on it yet. `aki analyze` runs on Claude Code
+  only.
+- **Pi** asks for approvals only when driven from the web. In a terminal its write boundary
+  still applies to file-writing tools, but shell commands are not path-limited.
+- **`aki link-chatgpt`** is terminal-only.
+- **An agent cannot be moved** to another machine, or between a project and `me`.
+
 ## [0.8.31] — 2026-09-18
 
 ### Added
