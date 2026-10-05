@@ -26,23 +26,21 @@ executable: no Rust toolchain, no Node runtime, no `node_modules`.
 ## Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/a-knowledge-interface/aki-cli/main/install.sh | bash
+curl -fsSL https://aki.am/install.sh | bash
 ```
 
-The installer downloads the binary for your platform from
+It is [`install.sh`](./install.sh) from this repository, served from aki.am; read it at
+[aki.am/install.sh](https://aki.am/install.sh) before you run it. The installer downloads the binary for your platform from
 [Releases](https://github.com/a-knowledge-interface/aki-cli/releases), verifies its
 checksum and installs it to `~/.local/bin`. aki's skills, which teach an agent to search
 project knowledge and save what it learns, are built into the binary and given to every
 session aki starts; the installer also keeps a copy in `~/.claude/skills` for Claude Code
 sessions you start yourself, and never overwrites a skill you have edited.
 
-To upgrade, run the same command again. The binary is replaced atomically by rename, so a
-running `aki` daemon keeps its old build until it restarts. Restart it once after upgrading:
-
-```bash
-systemctl --user restart aki-daemon.service                # Linux
-launchctl kickstart -k gui/$(id -u)/com.aki.daemon         # macOS
-```
+To upgrade, run the same command again. The binary is replaced atomically, and the
+background daemon switches to it by itself as soon as nothing is running on it, so no live
+session is cut off. A daemon older than 0.9.3 cannot do that. The installer restarts it for
+you when no web session is running; otherwise it prints the one command to run later.
 
 Upgrading from 0.8.x? Read the
 [0.9.1 upgrade notes](./CHANGELOG.md#091--2026-10-04): tasks made before 0.9 need
@@ -229,7 +227,9 @@ aki agent jobs watchtower     # its queue and what recently ran
   no restart.
 - **Answers come back.** Asked from inside another aki task or agent session, an agent
   writes its answer back into that session when the job finishes, even from another of your
-  machines. `--wait` prints it instead.
+  machines. It arrives while aki drives the session (from the web); a session open in a
+  terminal gets it the next time aki drives it, within seven days. `--wait` prints it
+  instead.
 - **Pinned to a machine.** An agent runs on one of your machines, for good: the one you
   created it on, or the one you name with `--machine <name>`. `aki ls -a` shows where each
   runs and whether that machine is online, and `aki start -a` elsewhere refuses. Retiring

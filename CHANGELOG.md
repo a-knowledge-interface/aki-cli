@@ -16,6 +16,61 @@ before 0.8.22 were internal; the history starts where the public releases do.
 
 ## [Unreleased]
 
+## [0.9.3] — 2026-10-05
+
+0.9.2 was tagged but never published: the release could not be pushed to this repository.
+0.9.3 is the first release with everything below.
+
+### Security
+
+These are fixed in the aki service, so they apply whichever aki version you run.
+
+- **A session could be addressed through someone else's copy of its id.** Anyone who knew a
+  session id and a machine's id could plant a task of their own carrying that session id.
+  They could then send messages into that session on its owner's machine, or read its live
+  events and history. Sessions are now resolved on the machine they are addressed to, for
+  the caller, and capturing a session id that belongs to a project you are not a member of
+  is refused. A copy captured while you were still a member stops working once you are
+  not.
+- **Any member's machine could report on another machine's agent job.** That covered a
+  viewer's machine too: it could finish a running job with text of its choosing, which was
+  then delivered to whoever asked, or put the job back in the queue. Only the agent's own
+  machine can now.
+- **Viewers can no longer create agents.** A viewer of the asking project can no longer
+  read the job, and turning on reply-back needs current access to the asking session.
+
+### Added
+
+- **Upgrades take effect by themselves.** The background daemon notices when its binary
+  has been replaced, checks the new one runs, and switches to it in place as soon as
+  nothing is running on it: no turn in flight, no question or approval waiting on you, no
+  agent job, nothing said for a minute. Nothing is cut off. A web session that was resting
+  restarts on your next message. `AKI_NO_SELF_UPGRADE=1` turns this off.
+- **The installer moves the daemon to the new version.** If no daemon is running, it starts
+  one. A 0.9.3 or later daemon is left to switch by itself. An older one is restarted right
+  away when no web session is running; otherwise the installer prints the one command to
+  run later. A machine that is not signed in is left alone. `AKI_NO_DAEMON=1` skips this
+  step.
+- **Install from aki.am.** `curl -fsSL https://aki.am/install.sh | bash` runs the same
+  installer as before, served from aki.am. The GitHub URL keeps working.
+
+### Fixed
+
+- Typing into a stopped Claude Code or Codex task from the web reopens it again. Since 0.9.1
+  the message was kept as "not sent". A stopped Pi task still has to be started first.
+- The first web message to a new agent starts it. It used to be kept as "not sent".
+- A personal agent's status (working, waiting on you) now reaches the web.
+- While the daemon waits to switch to a new version behind a long request, other messages
+  are no longer turned away for minutes.
+- A chat open on the web no longer stops updating when its machine reconnects, which a
+  self-upgrade does.
+- Every task's instructions told the agent to "pass `-p <project>`". On its own,
+  `aki -p` creates a task, so the instructions now say `AKI_PROJECT=<project>`.
+- The empty task list hinted at `aki ls --all`, which fails. It now says `aki ls -t --all`.
+- Replies from an agent are described as they work. They reach a session while aki is
+  driving it, or the next time it does within seven days. A session open only in a terminal
+  does not get them in the meantime.
+
 ## [0.9.1] — 2026-10-04
 
 0.9.0 was tagged but never published: its macOS build failed its own tests. 0.9.1 is the

@@ -11,7 +11,11 @@ set -euo pipefail
 
 # aki installer — downloads a prebuilt binary from the GitHub Releases of this repo.
 #
-#   curl -fsSL https://raw.githubusercontent.com/a-knowledge-interface/aki-cli/main/install.sh | bash
+#   curl -fsSL https://aki.am/install.sh | bash
+#
+# aki.am serves a copy of this exact file (aki-ui/deploy.sh --landing publishes it);
+# the public repo's raw URL serves it too:
+#   https://raw.githubusercontent.com/a-knowledge-interface/aki-cli/main/install.sh
 #
 # There is no build step and no Rust toolchain involved; aki ships as a single
 # self-contained binary, plus optional global copies of the aki skills it already
@@ -22,6 +26,7 @@ set -euo pipefail
 #   AKI_INSTALL_DIR   where the binary goes (default: ~/.local/bin)
 #   AKI_SKILLS_DIR    where skills go (default: ~/.claude/skills)
 #   AKI_NO_SKILLS=1   skip installing skills
+#   AKI_NO_DAEMON=1   leave the background daemon alone (default: move it to this version)
 
 REPO="a-knowledge-interface/aki-cli"
 
@@ -224,6 +229,15 @@ info "$("$INSTALL_DIR/aki" --version) installed"
 if [ "$MISSING" = "1" ]; then
     warn "some prerequisites are missing (above) — install them before running aki"
 fi
+
+# --- Put the background daemon on the new version ---------------------------
+#
+# An upgrade replaces the file, but a running daemon keeps the old code until it
+# restarts. The new binary decides how: start it if none is running; let a 0.9.3+
+# daemon switch by itself once idle; restart an older one only if no web session
+# would be cut off (otherwise it says how to restart it later). Signed-out
+# machines are left alone: `aki login` starts the daemon. AKI_NO_DAEMON=1 skips.
+"$INSTALL_DIR/aki" _after-install 2>/dev/null || true
 echo ""
 echo "  Get started:"
 echo "    cd your-workspace"
