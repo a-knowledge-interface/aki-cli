@@ -16,6 +16,54 @@ before 0.8.22 were internal; the history starts where the public releases do.
 
 ## [Unreleased]
 
+## [0.9.5] — 2026-10-06
+
+0.9.4 was tagged but never published: a check failed on macOS before release. 0.9.5 is the
+first release with everything below.
+
+### Changed
+
+- **Work reaches your machine as it happens.** The aki service now tells a connected machine
+  when there is something for it, so the machine no longer has to keep asking:
+  - a new job for an agent on it starts within about a second;
+  - a result an agent finished for one of its sessions arrives within about a second;
+  - a task removed on the web is removed from the machine within about a second, where it
+    used to take up to a minute.
+
+  While connected, the machine's background checks run much less often: about 14 requests
+  a minute when idle, against 32 before. Against an older aki service, everything runs at
+  the old pace.
+- **Codex agents in Auto mode can do what Claude agents do inside the project:**
+  - use the network;
+  - read and write the whole project folder;
+  - commit in their task's worktrees;
+  - run any `aki` command, `aki create -t` included.
+
+  Outside the project and aki's own folder (`~/.aki`), files stay read-only. Zevs is
+  unchanged and still runs Codex with no limits.
+
+### Fixed
+
+- **Codex agents in Auto mode could not use aki.** Every `aki` command they ran failed with
+  "Dns Failed … Temporary failure in name resolution", and a commit in a task's worktree
+  failed with "Read-only file system".
+- **A machine whose connection to the service died silently** looked connected to itself
+  while the web could not reach it. It now notices within 45 s and reconnects. After a
+  connection that was healthy, it reconnects within seconds rather than after its longest
+  wait.
+- **The web chat finds the right way to send a message** to a Claude or Codex session
+  without asking first, so each message makes one request fewer.
+
+### Upgrading
+
+- **Nothing to do.** A running daemon switches to 0.9.4 by itself once it is idle (from
+  0.9.2 on).
+- **A Codex session that is already running keeps its old limits** until it is started
+  again.
+- **Tools that keep caches in your home folder may fail inside a Codex agent in Auto
+  mode**, for example npm in `~/.npm` or cargo in `~/.cargo`, because the home folder outside
+  the project stays read-only. Run such an agent in Zevs.
+
 ## [0.9.3] — 2026-10-05
 
 0.9.2 was tagged but never published: the release could not be pushed to this repository.
