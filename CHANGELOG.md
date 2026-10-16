@@ -16,6 +16,22 @@ before 0.8.22 were internal; the history starts where the public releases do.
 
 ## [Unreleased]
 
+## [0.9.7] — 2026-10-16
+
+### Fixed
+
+- **Long conversations accept messages again.** With 0.9.6, a conversation with a
+  long history could stop accepting messages from the web app with "conversation
+  exceeds one native sync batch". Text messages and agent jobs now always go
+  through.
+  - Images and AI doc edits stay unavailable in such a conversation, and the web
+    app says why.
+  - Its chat shows the full history instead of a copy that stopped updating.
+
+### Upgrading
+
+- **Nothing to do.** A running daemon switches to 0.9.7 by itself once it is idle.
+
 ## [0.9.6] — 2026-10-16
 
 ### Added
