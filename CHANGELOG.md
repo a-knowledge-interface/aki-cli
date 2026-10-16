@@ -16,6 +16,38 @@ before 0.8.22 were internal; the history starts where the public releases do.
 
 ## [Unreleased]
 
+## [0.9.6] — 2026-10-16
+
+### Added
+
+- **Images in chat.** Attach PNG, JPEG or WebP images in the web chat: pick, paste or drop
+  them, up to four per message. They reach the agent when its model accepts images (Claude,
+  Codex and Pi).
+  - Images the agent produces show in the same conversation, with a viewer and download.
+  - The conversation and its images stay readable after a reload, even while the machine is
+    offline.
+  - Images are private: only people who can see the task can open them.
+- **`aki upload`** publishes a file an agent generated or edited:
+  - `-t <task>` into a task's chat, or `-a <agent>` into an agent's;
+  - `-d <doc>` for a doc, which prints the Markdown to insert;
+  - `-d <doc> --chat` into the doc's AI conversation.
+- **Images in docs.** Insert images into a doc from its editor. They stay with the doc across
+  its versions.
+
+### Changed
+
+- **AI doc edits are durable.** An edit's result is saved once, survives a daemon restart,
+  and a lost save is retried rather than re-running the edit.
+  - This needs 0.9.6 on the machine that holds the doc's AI session.
+  - The web app says so, instead of waiting, when that machine runs an older aki. Editing a
+    doc by hand works either way.
+
+### Upgrading
+
+- **Nothing to do.** A running daemon switches to 0.9.6 by itself once it is idle.
+- **Each machine that holds doc AI sessions needs 0.9.6** before AI edits of those docs work
+  again.
+
 ## [0.9.5] — 2026-10-06
 
 0.9.4 was tagged but never published: a check failed on macOS before release. 0.9.5 is the
