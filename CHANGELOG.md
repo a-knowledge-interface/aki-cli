@@ -16,6 +16,19 @@ before 0.8.22 were internal; the history starts where the public releases do.
 
 ## [Unreleased]
 
+## [0.9.10] — 2026-10-17
+
+### Fixed
+
+- **A message that cannot be delivered now says why.** Instead of "the session did not
+  accept it", the web app shows the reason: the session is still starting, the task is
+  open in a terminal, and so on. A message sent while a task is being opened waits a few
+  seconds for its session rather than failing.
+
+### Upgrading
+
+- **Nothing to do.** A running daemon switches to 0.9.10 by itself once it is idle.
+
 ## [0.9.9] — 2026-10-16
 
 ### Fixed
