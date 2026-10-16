@@ -16,6 +16,19 @@ before 0.8.22 were internal; the history starts where the public releases do.
 
 ## [Unreleased]
 
+## [0.9.9] — 2026-10-16
+
+### Fixed
+
+- **Messages sent while the agent is working are no longer refused.** Since 0.9.6, a
+  message sent from the web app during a running turn could fail ("the session did not
+  accept it") or wait behind a "Check saved message delivery" button. It now waits for
+  the turn to finish and goes out by itself, in order. Nothing to press.
+
+### Upgrading
+
+- **Nothing to do.** A running daemon switches to 0.9.9 by itself once it is idle.
+
 ## [0.9.8] — 2026-10-16
 
 ### Changed
