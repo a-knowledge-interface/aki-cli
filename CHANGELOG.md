@@ -16,6 +16,23 @@ before 0.8.22 were internal; the history starts where the public releases do.
 
 ## [Unreleased]
 
+## [0.9.8] — 2026-10-16
+
+### Changed
+
+- **Chat history syncs only what is new.** The machine used to send the whole
+  conversation to the server after every message, which got slow for long
+  conversations and stopped working past about 10 MB. Now it sends just the new
+  messages, so long conversations keep their images and synced history.
+  - After the upgrade, each long conversation is synced once from the start.
+    For a few seconds its chat shows the plain history.
+  - A single message over 1 MB, such as a huge tool output, is shortened in the
+    synced history instead of blocking it.
+
+### Upgrading
+
+- **Nothing to do.** A running daemon switches to 0.9.8 by itself once it is idle.
+
 ## [0.9.7] — 2026-10-16
 
 ### Fixed
