@@ -16,6 +16,19 @@ before 0.8.22 were internal; the history starts where the public releases do.
 
 ## [Unreleased]
 
+## [0.9.11] — 2026-10-20
+
+### Fixed
+
+- **A task working on its own no longer shows as idle.** When Claude picks a conversation
+  back up by itself, because a background job it started has finished, the task list now
+  shows it as working instead of idle.
+
+### Upgrading
+
+- **Nothing to do.** A running daemon switches to 0.9.11 by itself once it is idle. A
+  session already running picks the fix up the next time it starts.
+
 ## [0.9.10] — 2026-10-17
 
 ### Fixed
