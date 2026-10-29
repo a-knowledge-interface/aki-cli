@@ -16,6 +16,40 @@ before 0.8.22 were internal; the history starts where the public releases do.
 
 ## [Unreleased]
 
+## [0.9.12] — 2026-10-29
+
+### Added
+
+- **Knowledge maps.** A new `aki-map` skill draws a mind map of what the project knows
+  about a topic, a task or the whole project, with every node linking to the doc or task it
+  came from. Ask an agent for "a map of X" or "what do we know about X". `aki show -t` now
+  prints the task's id, which those links use.
+- **Diagrams in chat and docs.** Agents are told that ```mindmap and ```mermaid blocks
+  render as diagrams in the web app (the web app side shipped before this release).
+
+### Fixed
+
+- **Reasoning levels stay available when you pick the model that is already running.**
+  Choosing `opus` while `default` resolved to the same model was treated as a pending
+  switch, and the web app showed "No reasoning choices are currently advertised for this
+  model" for the whole turn. The pick applies at once and the levels stay.
+- **Messages held for a withdrawn model switch are released** when the turn ends, instead
+  of waiting for the next switch.
+- **Live status signals show in a live chat.** "Claude needs your permission", compaction
+  and "subagent finished" now appear while the stream is live; before, they appeared only
+  while the web app was polling.
+- **A web start that cannot launch says so.** "Starting…" used to spin forever when the
+  machine could not launch `aki web`, or when it crashed before reporting. Both now end
+  with the reason shown on the task.
+- **Retries and stops are explained.** While a turn is being retried the chat says
+  "retrying (2/3) in 4s…"; after a Stop that discarded queued messages, it says so and
+  removes them.
+
+### Upgrading
+
+- **Nothing to do.** A running daemon switches to 0.9.12 by itself once it is idle. A
+  session already running picks the model fixes up the next time it starts.
+
 ## [0.9.11] — 2026-10-20
 
 ### Fixed
