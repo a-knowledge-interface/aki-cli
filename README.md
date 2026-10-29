@@ -264,6 +264,11 @@ aki create -d "API Reference" --file docs/API.md
 aki learn list                                     # review distilled learnings
 ```
 
+Ask an agent for a **knowledge map**: the `aki-map` skill draws a mind map of what the
+project knows about a topic, a task or the whole project, with every node linking to the
+doc or task it came from. Chat replies and docs render ```mindmap and ```mermaid blocks as
+diagrams in the web app, and the agents aki starts are told so.
+
 ## Command reference
 
 Run `aki <command> --help` for any of these. Everywhere `<task>` appears you may write the
@@ -276,6 +281,7 @@ task's name, its `acme/name` form, or its number from `aki ls -t`.
 | `aki -p "<prompt>"` | create a task from a prompt and start the agent |
 | `aki create -t <name> [--repos \| --no-repos] [--base --profile --notes --template]` | create a task without starting it |
 | `aki ls -t` | list tasks and their status |
+| `aki show -t <task>` | one task in full: its id, both axes of state, branch, worktrees and notes |
 | `aki start <task>` | start or resume a task in the terminal |
 | `aki go <task>` | attach to a running task |
 | `aki stop <task>` | pause the agent; the worktrees stay exactly as they are |
