@@ -16,6 +16,59 @@ before 0.8.22 were internal; the history starts where the public releases do.
 
 ## [Unreleased]
 
+## [0.9.14] — 2026-11-07
+
+Includes the changes prepared for 0.9.13, whose public packages were unavailable
+when this release was prepared. 0.9.14 includes the release infrastructure repair.
+
+### Added
+
+- **Task model and reasoning preferences.** Set `--model` and `--reasoning-effort`
+  when creating a task, or override them for a launch with `aki start` or `aki web`.
+  The first launch validates the selection, and later launches preserve it.
+
+### Fixed
+
+- **Task startup survives refresh and repeated clicks.** The browser keeps showing
+  Starting while repositories and the agent are prepared. A second click or another
+  tab joins the same start, preventing duplicate setup and worktree collisions.
+- **Failed setup can resume without discarding your work.** Retry preserves existing
+  worktrees and edited files. A lost connection keeps the current start reserved;
+  confirmed failures offer Retry start. Interrupted custom setup commands require
+  inspection instead of being run again automatically.
+- **Chat waits for the agent to accept input.** A session appearing early no longer
+  makes setup look finished. Startup errors also fit within phone screens.
+- **Saving task settings and starting cannot prepare the same task on two machines.**
+  A settings Save assigns the task's machine before setup. Retries after a lost reply
+  stay on that machine, and an accepted start keeps its original result after registration.
+- **Chat history survives changes in native transcript formats.** Internal prompt
+  copies no longer appear as duplicate messages. Repairs preserve saved messages
+  and their placement; an incomplete or malformed transcript cannot silently
+  replace acknowledged history with a shorter conversation.
+- **Text can still be delivered when history sync is degraded.** Eligible messages
+  keep a durable delivery record, and retries retain their identity. Uncertain
+  delivery stays visible for inspection instead of being sent twice.
+- **Interrupted agent jobs retain their results and delivery state.** A restart or
+  lost server reply cannot turn an unverified handoff into successful completion.
+  Working and review phases are not automatically replayed when their outcome is
+  uncertain.
+- **A completed result and its delivery are shown separately.** A requester notice
+  that is still queued remains awaiting delivery. A lost acknowledgement is retried
+  without sending the same notice again.
+- **Provider-assigned session IDs no longer prevent delivery acknowledgements or
+  job recovery.** Replies keep their original delivery proof across recovery.
+
+### Upgrading
+
+- A running daemon switches to the installed version once idle. Confirm the running
+  version on the Machines page after updating.
+- Operators running their own server must deploy the matching backend and database
+  migrations before updating clients. Job claims require the new outcome protocol;
+  durable browser startup also needs the startup migration and a compatible running
+  daemon. An unsupported or disconnected machine shows an update/reconnect instruction.
+- Existing uncertain jobs or old pending receipts may need explicit inspection.
+  Keep those records; do not clear them to force a retry.
+
 ## [0.9.12] — 2026-10-29
 
 ### Added

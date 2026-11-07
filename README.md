@@ -157,6 +157,23 @@ Pick the machine, browse or type the folder, and it runs the real `aki init` the
 you can do this on your machines; nobody you share a task or project with can browse your
 filesystem through it.
 
+### Starting and retrying a task
+
+Choose **Drive from web** to prepare the task's repositories and open its session.
+**Starting…** stays visible after a refresh or when you open another tab. Repeated
+clicks join the same start, and chat becomes available when the agent can accept input.
+
+If the machine disconnects, aki keeps checking that start. After a confirmed failure,
+**Retry start** resumes saved setup on the same machine, preserving existing worktrees
+and edited files. Interrupted custom setup commands require inspection before retrying;
+aki does not automatically run them again.
+
+Saving model settings on a web-created task can prepare its repositories and assigns
+it to the selected machine. If the Save response is lost, retry on that machine.
+This startup recovery requires CLI 0.9.13 or newer on the machine and the matching
+server update. After upgrading, let active sessions finish so the daemon can switch;
+the Machines page shows the running version.
+
 ## Choose the agent
 
 aki drives three coding agents. A project has a default, and each task or agent can name
