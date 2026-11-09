@@ -16,6 +16,37 @@ before 0.8.22 were internal; the history starts where the public releases do.
 
 ## [Unreleased]
 
+## [0.9.15] — 2026-11-09
+
+Security release. Upgrade every machine that runs `aki serve`.
+
+### Security
+
+- **The local daemon checks every request.** Every request to `127.0.0.1:8899` now
+  needs the local control token and a `127.0.0.1` or `localhost` host name, reads
+  included. Other local programs and web pages can no longer read transcripts or
+  task state from it. A bare `GET /health` still answers with the version only.
+- **Only the machine's owner runs tools unattended.** Work started from the web by
+  someone else runs at no more than `defaults.others_max_autonomy` in
+  `~/.aki/config.toml` (default `manual`), so every tool call waits for approval.
+  Approvals, answers and task starts are always attributed to the person who sent them.
+- **A local switch for remote control.** Set `[remote] control` in
+  `~/.aki/config.toml` to `full` (the default), `read-only` (the web can watch but
+  not act) or `off` (nothing is served over the tunnel). If the config file can't be
+  read, remote control turns off.
+- **The tunnel reaches only the routes the web needs.** Requests outside a fixed route
+  list are refused, and nothing is served before the backend confirms who owns the machine.
+- **The prompt hook adds only reviewed knowledge** to an agent's context.
+
+### Removed
+
+- The daemon's `POST /gendoc` endpoint, which could run an agent over any project.
+
+### Fixed
+
+- **Capture stops retrying sessions the backend refuses for good.** They are kept in
+  `~/.aki/spool/quarantine/` instead of being retried forever.
+
 ## [0.9.14] — 2026-11-07
 
 Includes the changes prepared for 0.9.13, whose public packages were unavailable
