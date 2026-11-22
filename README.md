@@ -313,7 +313,9 @@ task's name, its `acme/name` form, or its number from `aki ls -t`.
 | `aki summary <task>` | write the task's summary doc |
 | `aki rm -t <task>` | stop it, close it, then delete the task and its workspace (asks first) |
 | `aki hist` | completed task history |
+| `aki switch <task> --to <agent> [--model M] [--continue]` | continue the same task and chat with another agent (off by default: `[switch] enabled = true`; Linux) |
 | `aki doctor <task> [--repair-context]` | explain the task's session; `--repair-context` regenerates its instructions file |
+| `aki doctor --switches` / `--preflight strict\|incident` | inventory retained switch state; run the read-only release or incident checks |
 | `aki adopt <session-id> -t <task>` | attach a session you ran outside aki to a task |
 
 ### Agents
@@ -409,6 +411,11 @@ command = "/opt/pi/bin/pi"
 
 `claude`, `pi` and `codex` need no profile: `aki create -t <name> --profile codex` just
 works. Name a profile the same way to use it.
+
+```toml
+[switch]
+enabled = true   # let `aki switch` and the web's agent picker move a resting task to another agent (Linux)
+```
 
 ## Running tasks from tasks
 

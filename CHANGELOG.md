@@ -16,6 +16,76 @@ before 0.8.22 were internal; the history starts where the public releases do.
 
 ## [Unreleased]
 
+## [0.9.20] — 2026-11-22
+
+There are no 0.9.16 to 0.9.19 releases. Their tags failed the release checks: tests that
+depended on the build machine, and then the first runs of this code on macOS. 0.9.20 is
+the same feature set with those repaired and the fixes listed below.
+
+Feature release. The headline, switching a task's agent in place, ships **off by default**
+and Linux-only; everything else in it applies to every machine that runs `aki serve`.
+
+### Added
+
+- **Switch a task's agent in place.** `aki switch <task> --to claude|codex|pi [--model M]
+  [--yes]`, or the agent picker in the web: the same task and chat continue with another
+  agent, in a fresh conversation that starts from a brief of the earlier one. `--continue`
+  hands your latest request to the new agent; the web offers the same as **Continue**.
+  A standing agent switches the same way. Only a resting conversation switches; the history
+  of every earlier segment is kept and shown with markers in the terminal, the web and
+  snapshots. Turn it on with `[switch] enabled = true` in `~/.aki/config.toml` (read at
+  the point of use, no restart). On anything but Linux the gate stays off. Two further
+  modes, `pane_supervisor` and `terminal_in_place`, stay off until qualified.
+- **Usage limits are reported.** When an agent runs out of quota the daemon says so, per
+  profile and per provider for Pi, and says why the turn failed instead of going quiet.
+- **`aki doctor --switches`** lists retained switch state on this machine, read-only.
+  **`aki doctor --preflight strict|incident`** runs the release or incident checks.
+  For a switched conversation whose files went missing or diverged: `aki doctor <task>
+  --reap | --accept-link | --keep link|native | --confirm-empty`, each explained before it
+  acts, each confirmable with `-y`.
+
+### Changed
+
+- **Every input is accounted for exactly.** The daemon registers each agent process before
+  it starts (the writer registry), admits every write and spawn through one gate, and a
+  run advances only on a status that names it. A message is delivered once or reported as
+  not sent; it is never guessed. `stop`, `close`, `done` and the other lifecycle commands
+  wait out an open switch.
+- **Old queued web messages are set aside, not delivered blind.** Messages queued before
+  0.9.15 carry no conversation identity. A new daemon keeps them, byte for byte, as **Not
+  sent** instead of delivering them to a conversation that may have changed; `aki doctor`
+  explains them.
+- Switch refusals and retry outcomes are shown as actionable status in the terminal and the
+  web, and recovery reports an uncertain exit truthfully instead of claiming success.
+- `aki _stream`, a developer harness, is refused for every task aki manages.
+
+### Fixed
+
+- **A lock nobody held could briefly read as busy.** aki released its terminal-publication
+  and capture file locks by closing the file. While another thread of the daemon was
+  starting a process, the closed lock could still look held for a moment, and an
+  immediate retry was refused as busy. The locks are now released explicitly.
+- macOS: clearing an agent's context files no longer plans the same file twice on a disk
+  that ignores letter case.
+- Pi: the gate extension no longer treats a hook as passed when its helper exits before
+  reading the request.
+- **An agent's job could stay "running" forever after a daemon restart.** A job phase
+  recovered from its journal after a restart or a respawned sidecar was reported complete
+  but refused when recorded, so the job never finished, the agent read as working, and the
+  daemon's idle self-upgrade never fired. A recorded phase is now closed by its terminal
+  receipt, whichever attachment delivered it.
+- Pi: an asynchronous hook failure no longer crashes the session.
+- Claude: a retried turn stays busy until its result arrives, so a queued message cannot
+  slip in between.
+- A resumed transcript that was truncated or rewritten is detected rather than trusted.
+- The daemon sweeps orphan sidecars before falling back to a plain start.
+
+### Upgrade notes
+
+- The daemon switches to the new binary by itself once idle, as since 0.9.2.
+- Switching needs the 2026-11-22 backend (migrations 0067–0071). Older daemons keep working
+  against it.
+
 ## [0.9.15] — 2026-11-09
 
 Security release. Upgrade every machine that runs `aki serve`.
