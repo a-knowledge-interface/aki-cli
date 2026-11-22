@@ -16,6 +16,35 @@ before 0.8.22 were internal; the history starts where the public releases do.
 
 ## [Unreleased]
 
+## [0.9.21] — 2026-11-22
+
+### Added
+
+- **`aki switch -a <agent> --to <harness>`** switches a standing agent's harness from the
+  terminal, on the machine it runs on. The web has offered it on the agent's page; the
+  command could only name tasks.
+
+### Changed
+
+- **`aki agent cancel <name> <seq>` cancels a job that has already started**, not only a
+  waiting one. Its machine is told to stop the turn.
+- **`aki stop -a` ends the job the agent was working on.** It used to stop the session and
+  leave the job marked running. Jobs still queued start the agent again: an agent is
+  self-starting, and `aki close -a` is what holds a queue.
+
+### Fixed
+
+- **A stopped agent could keep showing as running, and run an old job again.** A job whose
+  result was never recorded stayed "running" for good, blocked the queue behind it, and was
+  started again at the next daemon restart. A started job can now be cancelled, a cancelled
+  job is never brought back, and the daemon lets go of one cancelled while it held it.
+- **No two-minute hold after a restart.** After every restart or upgrade the daemon reported
+  every run it had ever recorded to aki's backend again, and until that finished each task
+  on the machine read as busy and refused a message. It now reports only the runs the
+  backend has not answered for. The first restart after upgrading still does it once.
+- **A message sent while aki is restarting is kept, not refused.** It is queued like one sent
+  during a turn and delivered when the restart has settled.
+
 ## [0.9.20] — 2026-11-22
 
 There are no 0.9.16 to 0.9.19 releases. Their tags failed the release checks: tests that

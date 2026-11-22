@@ -314,6 +314,7 @@ task's name, its `acme/name` form, or its number from `aki ls -t`.
 | `aki rm -t <task>` | stop it, close it, then delete the task and its workspace (asks first) |
 | `aki hist` | completed task history |
 | `aki switch <task> --to <agent> [--model M] [--continue]` | continue the same task and chat with another agent (off by default: `[switch] enabled = true`; Linux) |
+| `aki switch -a <agent> --to <harness> [--model M]` | the same for a standing agent: it keeps its jobs and its conversation (on the machine it runs on) |
 | `aki doctor <task> [--repair-context]` | explain the task's session; `--repair-context` regenerates its instructions file |
 | `aki doctor --switches` / `--preflight strict\|incident` | inventory retained switch state; run the read-only release or incident checks |
 | `aki adopt <session-id> -t <task>` | attach a session you ran outside aki to a task |
@@ -331,7 +332,7 @@ task's name, its `acme/name` form, or its number from `aki ls -t`.
 | `aki agent edit <name>` | change instructions, autonomy, model or description; `default` clears an explicit choice |
 | `aki send <name> "<prompt>" [--wait --timeout --autonomy]` | queue work (`me/name`, `project/name` to be exact); `--wait` blocks and prints the result |
 | `aki agent jobs <name>` | the agent's queue and what recently ran |
-| `aki agent cancel <name> <seq>` | drop a job that has not started yet |
+| `aki agent cancel <name> <seq>` | cancel a job, waiting or already running |
 | `aki agent schedule <name> [--when \| --every \| --daily] [--tz --autonomy]` | standing work; no flags lists, `--clear` removes all |
 | `aki close -a <name>` | retire an agent; history survives and re-creating the name restores it |
 
