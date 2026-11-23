@@ -16,6 +16,20 @@ before 0.8.22 were internal; the history starts where the public releases do.
 
 ## [Unreleased]
 
+## [0.9.22] — 2026-11-23
+
+### Added
+
+- **Take back one queued message.** A message sent from the web while the agent is working
+  waits for the turn to end. It can now be removed on its own, from the chat or from the
+  task's queue; before, the only choice was to discard everything that was waiting.
+- **Each agent program's own models, when creating an agent or a task in the web.** The
+  model list now comes from the program chosen (Claude, Pi or Codex) on the machine that
+  will run it. It used to show a fixed Claude list whichever one you picked.
+- **A task created in the web starts with the model and level chosen there.** New task now
+  has the same model and autonomy choices as New agent. A level above Manual applies only
+  when the task starts on a machine of your own.
+
 ## [0.9.21] — 2026-11-22
 
 ### Added
