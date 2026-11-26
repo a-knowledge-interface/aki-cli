@@ -73,6 +73,18 @@ in a **browser**, Gatekeeper quarantines it and macOS will refuse to run the bin
 Clear it with `xattr -d com.apple.quarantine aki-macos-arm64.tar.gz` before extracting
 (the binaries are ad-hoc signed, not notarized).
 
+**macOS: where to keep projects.** Keep projects outside `~/Documents`, `~/Desktop` and
+`~/Downloads`. macOS asks for permission the first time a program opens a file there. An
+agent that aki's background service started may then wait on a prompt nobody sees, and aki
+counts an agent that waits as still running.
+
+**macOS and Linux: your home folder.** aki keeps coordination state under
+`~/.local/state/aki` and refuses to use it when someone else could write on the way there:
+a folder from `/` to your home, `~/.local` or `~/.local/state` that another user owns, that
+group or others can write, that has an access-control entry granting a write, or that is a
+symbolic link. The background service does not start then. `aki doctor --preflight incident`
+names the folder (`publication_context`).
+
 ### Prerequisites
 
 Not bundled. The installer checks for them and tells you what's missing:
@@ -83,8 +95,11 @@ Not bundled. The installer checks for them and tells you what's missing:
     `npm install -g @anthropic-ai/claude-code`
   - [Pi](https://pi.dev): `curl -fsSL https://pi.dev/install.sh | sh`
   - [Codex](https://developers.openai.com/codex): `npm install -g @openai/codex`
-- **[zellij](https://zellij.dev/)**: only for terminal mode; the installer fetches it if
-  it's missing
+- **[zellij](https://zellij.dev/)**: only for terminal mode. aki runs its session under
+  zellij 0.42.2 exactly. The installer fetches it if no zellij is installed; if yours is
+  another version, the first `aki go` downloads 0.42.2 to `~/.aki/bin/zellij` (checked
+  against a pinned sha256) and leaves yours alone. Your own zellij does not list aki's
+  session: re-attach with `~/.aki/bin/zellij attach aki`
 
 Linux binaries are built against system OpenSSL. If `aki --version` fails on a minimal
 distro, install your distro's `openssl` / `ca-certificates` packages. macOS binaries use
@@ -313,7 +328,7 @@ task's name, its `acme/name` form, or its number from `aki ls -t`.
 | `aki summary <task>` | write the task's summary doc |
 | `aki rm -t <task>` | stop it, close it, then delete the task and its workspace (asks first) |
 | `aki hist` | completed task history |
-| `aki switch <task> --to <agent> [--model M] [--continue]` | continue the same task and chat with another agent (off by default: `[switch] enabled = true`; Linux) |
+| `aki switch <task> --to <agent> [--model M] [--continue]` | continue the same task and chat with another agent (off by default: `[switch] enabled = true`) |
 | `aki switch -a <agent> --to <harness> [--model M]` | the same for a standing agent: it keeps its jobs and its conversation (on the machine it runs on) |
 | `aki doctor <task> [--repair-context]` | explain the task's session; `--repair-context` regenerates its instructions file |
 | `aki doctor --switches` / `--preflight strict\|incident` | inventory retained switch state; run the read-only release or incident checks |
@@ -415,7 +430,7 @@ works. Name a profile the same way to use it.
 
 ```toml
 [switch]
-enabled = true   # let `aki switch` and the web's agent picker move a resting task to another agent (Linux)
+enabled = true   # let `aki switch` and the web's agent picker move a resting task to another agent
 ```
 
 ## Running tasks from tasks

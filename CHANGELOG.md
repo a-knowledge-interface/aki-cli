@@ -16,6 +16,70 @@ before 0.8.22 were internal; the history starts where the public releases do.
 
 ## [Unreleased]
 
+## [0.9.23] — 2026-11-26
+
+### Added
+
+- **macOS: continue a task with another agent.** `aki switch <task> --to <agent>`,
+  `aki switch -a <agent> --to <agent>` and the agent picker in the web now work on a Mac, for
+  a task or standing agent that is at rest. Off by default on every system: set
+  `[switch] enabled = true` in `~/.aki/config.toml`.
+- **`aki doctor --preflight` on macOS** checks the background service instead of skipping it.
+- **`aki status` says what the background service is waiting for.** After an upgrade the
+  service keeps running the old version until nothing is running on it. `aki status` and
+  `aki doctor <task>` now show that, and what it waits for. They also show when the service
+  holds new starts back because sessions from before a restart are still ending.
+- **`aki doctor --preflight` checks the folders aki keeps its state under.** A new check,
+  `publication_context`, fails and names the folder when the path from `/` to
+  `~/.local/state` is unsafe (see "Upgrading on macOS").
+
+### Changed
+
+- **aki runs its terminal session under its own zellij 0.42.2.** If the zellij you have is
+  another version (Homebrew ships a newer one), the first `aki go` downloads 0.42.2 to
+  `~/.aki/bin/zellij`, checked against a pinned checksum, and leaves yours alone. Your own
+  zellij does not list aki's session; return to it with `~/.aki/bin/zellij attach aki`. On
+  Linux this fixes `aki go` being refused when the installed zellij was not 0.42.2.
+- **macOS: `aki` and `aki go` from outside the session.** A bare `aki` outside the `aki`
+  session, and `aki go <task>` outside it while it is running, now refuse and print the command
+  that returns to the session, as on Linux. Run `aki go <task>` inside the session to open or
+  focus a tab.
+- **macOS: timers in agent sessions are exact.** The background service now runs as an
+  interactive process. It takes effect the next time the service is loaded (log out and in, or
+  restart the Mac).
+
+### Fixed
+
+- **macOS: `aki go` starts the agent again.** Since 0.9.16 the task's tab opened with no agent
+  on a Mac.
+- **macOS: sessions no longer outlive the background service.** After the service crashed,
+  restarted or was unloaded, web sessions kept running with nothing driving them. Every
+  session (Claude, Codex, Pi) now ends by itself within seconds, together with the tools it
+  had started, and the service ends anything left over when it starts again, before it starts
+  anything new.
+- **A Codex session ends when the background service stops.** Since 0.9.16 a Codex session
+  did not notice that the service had closed its connection, and kept running. On Linux
+  this showed only for a service run outside systemd.
+- **The installer checks the zellij it downloads.** `install.sh` installs zellij 0.42.2 only
+  when it matches aki's pinned checksum. Otherwise it installs none, and the first `aki go`
+  downloads a checked copy.
+- **macOS: `aki login` no longer restarts the background service while web sessions run.**
+- **Apple Silicon under Rosetta:** the installer takes the arm64 build.
+
+### Upgrading on macOS
+
+Before the first `aki go` after upgrading, close the `aki` zellij session an earlier aki
+opened: `zellij kill-session aki`. aki refuses to open a terminal while that session runs, and
+a task that had a tab in it cannot be switched until it is gone.
+
+aki now keeps coordination state under `~/.local/state/aki` on a Mac, as on Linux, and
+checks that nobody else can write on the way there. The background service does not start
+if a folder from `/` to your home folder, `~/.local` or `~/.local/state` is owned by another
+user, is writable by group or others, has an access-control entry that lets someone else
+write, or is a symbolic link. A stock Mac passes. If the web shows your Mac offline after
+the upgrade, run `aki doctor --preflight incident`: the line `publication_context` names the
+folder. `aki status` says the same.
+
 ## [0.9.22] — 2026-11-23
 
 ### Added

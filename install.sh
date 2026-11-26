@@ -71,6 +71,11 @@ install_binary() {
 
 OS="$(uname -s)"
 ARCH="$(uname -m)"
+# A shell running under Rosetta on Apple Silicon reports x86_64. The hardware says which
+# build to take: `hw.optional.arm64` is 1 there, and absent on an Intel Mac.
+if [ "$OS" = "Darwin" ] && [ "$(sysctl -n hw.optional.arm64 2>/dev/null)" = "1" ]; then
+    ARCH="arm64"
+fi
 
 # Friendly platform names, matching the release assets (package.sh maps the
 # build triples to these same names).
@@ -202,19 +207,37 @@ if have zellij; then
     info "zellij: $(zellij --version)"
 else
     ZELLIJ_VERSION="0.42.2"
+    # The sha256 of the `zellij` binary inside each asset of that release: the same pins
+    # aki itself checks before it runs a zellij it downloaded (aki-core/src/zellij.rs).
     case "$OS-$ARCH" in
-        Linux-x86_64)              ZTRIPLE="x86_64-unknown-linux-musl" ;;
-        Linux-aarch64|Linux-arm64) ZTRIPLE="aarch64-unknown-linux-musl" ;;
-        Darwin-x86_64)             ZTRIPLE="x86_64-apple-darwin" ;;
-        Darwin-arm64)              ZTRIPLE="aarch64-apple-darwin" ;;
+        Linux-x86_64)              ZTRIPLE="x86_64-unknown-linux-musl"
+                                   ZSUM="d92a8ccf1b79939fbd8e7f843731bea3a56880471b37517af7d6103125e7f991" ;;
+        Linux-aarch64|Linux-arm64) ZTRIPLE="aarch64-unknown-linux-musl"
+                                   ZSUM="edc198f939b87fee165dde2773ba1818ca52a11f29a42986945aa6a8371c888e" ;;
+        Darwin-x86_64)             ZTRIPLE="x86_64-apple-darwin"
+                                   ZSUM="41498d9a6ed2c1f19c13a596240c4ec65e396434d03933c98f55d5c9dcd78559" ;;
+        Darwin-arm64)              ZTRIPLE="aarch64-apple-darwin"
+                                   ZSUM="12f61f13df1a3d7dde80b65892022179f511c9d110ef3d8bd97bb0f1eda36fa1" ;;
     esac
     info "installing zellij v$ZELLIJ_VERSION (needed for terminal mode)..."
     ZURL="https://github.com/zellij-org/zellij/releases/download/v${ZELLIJ_VERSION}/zellij-${ZTRIPLE}.tar.gz"
     if fetch "$ZURL" "$TMP/zellij.tar.gz" && tar -xzf "$TMP/zellij.tar.gz" -C "$TMP" zellij; then
-        install_binary "$TMP/zellij" "$INSTALL_DIR/zellij"
-        info "zellij installed to $INSTALL_DIR/zellij"
+        # Only a zellij that matches its pin is installed. Without it nothing is lost: the
+        # first `aki go` downloads a checked copy of its own.
+        if have sha256sum;  then ZGOT="$(sha256sum "$TMP/zellij" | cut -d' ' -f1)"
+        elif have shasum;   then ZGOT="$(shasum -a 256 "$TMP/zellij" | cut -d' ' -f1)"
+        else ZGOT=""
+        fi
+        if [ -n "$ZGOT" ] && [ "$ZGOT" = "$ZSUM" ]; then
+            install_binary "$TMP/zellij" "$INSTALL_DIR/zellij"
+            info "zellij installed to $INSTALL_DIR/zellij (checksum verified)"
+        elif [ -z "$ZGOT" ]; then
+            warn "no sha256sum/shasum available — zellij not installed; aki downloads it on the first 'aki go'"
+        else
+            warn "zellij checksum mismatch (expected $ZSUM, got $ZGOT) — not installed; aki downloads it on the first 'aki go'"
+        fi
     else
-        warn "could not fetch zellij — install it from https://zellij.dev/ for terminal mode"
+        warn "could not fetch zellij — aki downloads it on the first 'aki go' (or install it from https://zellij.dev/)"
     fi
 fi
 
